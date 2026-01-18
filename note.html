@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife Pro - Action Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* 核心动画 */
+        .slide-up { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-up.active { transform: translateY(0); }
+        
+        .fade-in-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .fade-in-overlay.active { opacity: 1; pointer-events: auto; }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        .btn-pulse { animation: pulse-orange 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex justify-center items-center p-4">
+
+    <div class="w-full max-w-sm h-[844px] bg-slate-900 shadow-2xl overflow-hidden relative border border-slate-800 rounded-[35px] flex flex-col ring-8 ring-slate-900">
+        
+     <div id="workoutLevel" class="slide-up absolute inset-0 z-50 bg-slate-900 flex flex-col">
+            <div class="px-6 pt-12 pb-6 flex justify-between items-center border-b border-slate-800">
+                <button onclick="closeWorkoutLevel()" class="text-slate-400 text-sm">取消</button>
+                <h2 class="text-lg font-bold">力量训练记录</h2>
+                <button onclick="saveAndExit()" class="text-orange-500 font-bold">保存</button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+                <div class="bg-slate-800/50 rounded-2xl p-5 mb-6 border border-slate-700">
+                    <label class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">当前动作</label>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-xl font-bold text-white">杠铃卧推 (Bench Press)</span>
+                        <div class="text-orange-500 text-xs bg-orange-500/10 px-2 py-1 rounded">更换</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                        <label class="text-[10px] text-slate-500 uppercase">重量 (KG)</label>
+                        <input type="number" placeholder="0" class="bg-transparent text-3xl font-bold w-full mt-2 outline-none text-orange-500 placeholder:text-slate-700">
+                    </div>
+                    <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                        <label class="text-[10px] text-slate-500 uppercase">次数 (Reps)</label>
+                        <input type="number" placeholder="0" class="bg-transparent text-3xl font-bold w-full mt-2 outline-none text-orange-500 placeholder:text-slate-700">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase">训练组记录</h3>
+                    <span class="text-[10px] text-slate-500">建议间歇: 60s</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-full bg-slate-700 text-[10px] flex items-center justify-center">1</span>
+                            <span class="text-sm">60 KG × 12 次</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-800/30 p-4 rounded-xl border border-slate-700/50">
+                        <div class="flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-full bg-slate-700 text-[10px] flex items-center justify-center">2</span>
+                            <span class="text-sm">65 KG × 10 次</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-slate-600"></i>
+                    </div>
+                    <button class="w-full py-4 border-2 border-dashed border-slate-800 rounded-xl text-slate-600 text-sm hover:text-slate-400 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> 添加下一组
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 页面加载后延迟一点点触发动画，效果更好
+    window.onload = () => {
+        document.getElementById('workoutLevel').classList.add('active');
+    };
+
+    function closeWorkoutLevel() {
+        document.getElementById('workoutLevel').classList.remove('active');
+        // 动画结束后跳回主页
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 400);
+    }
+
+    function saveAndExit() {
+        closeWorkoutLevel();
+    }
+    </script>
+</body>
+</html>

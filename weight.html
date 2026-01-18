@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记录体重</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+        .slide-up { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .slide-up.active { transform: translateY(0); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 刻度尺容器 */
+        .ruler-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            overflow-x: scroll;
+            cursor: grab;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 20px;
+        }
+        /* 刻度线样式 */
+        .ruler-content {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px; /* 刻度间距 */
+            padding-left: 50%; /* 保证第一个刻度能对齐中心 */
+            padding-right: 50%;
+        }
+        .scale-line {
+            width: 2px;
+            background-color: #334155;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .scale-line.long { height: 40px; background-color: #94a3b8; }
+        .scale-line.short { height: 20px; }
+        /* 指针线 */
+        .ruler-pointer {
+            position: absolute;
+            left: 50%;
+            bottom: 15px;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 60px;
+            background-color: #10b981;
+            border-radius: 4px;
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(16,185,129,0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex justify-center items-center p-4">
+    <div class="w-full max-w-sm h-[844px] bg-slate-900 shadow-2xl overflow-hidden relative border border-slate-800 rounded-[35px] ring-8 ring-slate-900">
+        
+        <div id="weightPage" class="slide-up absolute inset-0 bg-slate-900 flex flex-col">
+            <div class="px-6 pt-12 pb-6 flex justify-between items-center border-b border-slate-800">
+                <button onclick="goBack()" class="text-slate-400 text-sm">取消</button>
+                <h2 class="text-lg font-bold text-white">记体重</h2>
+                <button onclick="save()" class="text-emerald-500 font-bold">保存</button>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center relative">
+                <div class="text-center mb-16">
+                    <span class="text-slate-500 text-xs uppercase tracking-widest font-bold">当前体重</span>
+                    <div class="flex items-baseline justify-center gap-2 mt-2">
+                        <span id="weight-val" class="text-8xl font-black text-white tracking-tighter">70.0</span>
+                        <span class="text-2xl text-emerald-500 font-bold">KG</span>
+                    </div>
+                </div>
+
+                <div class="w-full relative px-4">
+                    <div class="ruler-pointer"></div>
+                    <div id="ruler" class="ruler-container no-scrollbar">
+                        <div id="ruler-content" class="ruler-content">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="w-full grid grid-cols-2 gap-4 px-6 mt-16">
+                    <div class="bg-slate-800/40 p-5 rounded-3xl border border-slate-800 flex flex-col items-center">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase mb-2">BMI 指数</span>
+                        <span class="text-xl font-bold text-slate-200">22.4</span>
+                    </div>
+                    <div class="bg-slate-800/40 p-5 rounded-3xl border border-slate-800 flex flex-col items-center">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase mb-2">较上次</span>
+                        <span class="text-xl font-bold text-rose-500">-0.5 kg</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ruler = document.getElementById('ruler');
+        const rulerContent = document.getElementById('ruler-content');
+        const weightDisplay = document.getElementById('weight-val');
+        
+        const minWeight = 30; // 最小体重
+        const maxWeight = 150; // 最大体重
+        const step = 0.1; // 刻度步长
+        const itemWidth = 14; // 每个刻度的总宽度 (scale-line width 2px + gap 12px)
+
+        // 1. 初始化刻度尺
+        function initRuler() {
+            let html = '';
+            for (let i = minWeight * 10; i <= maxWeight * 10; i++) {
+                const isLong = i % 10 === 0;
+                html += `<div class="scale-line ${isLong ? 'long' : 'short'}"></div>`;
+            }
+            rulerContent.innerHTML = html;
+        }
+
+        // 2. 监听滚动并更新数值
+        ruler.addEventListener('scroll', () => {
+            const scrollLeft = ruler.scrollLeft;
+            // 计算当前处于第几个刻度
+            const index = Math.round(scrollLeft / itemWidth);
+            const currentWeight = (minWeight + index * step).toFixed(1);
+            
+            weightDisplay.innerText = currentWeight;
+
+            // 轻微的震动反馈 (如果设备支持)
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(5);
+            }
+        });
+
+        // 3. 设置初始值 (例如默认 70kg)
+        function setInitialWeight(val) {
+            const index = (val - minWeight) / step;
+            ruler.scrollLeft = index * itemWidth;
+        }
+
+        window.onload = () => {
+            document.getElementById('weightPage').classList.add('active');
+            initRuler();
+            // 延迟一丢丢等待 DOM 渲染后再定位，确保准确
+            setTimeout(() => setInitialWeight(72.5), 100);
+        };
+
+        function goBack() {
+            document.getElementById('weightPage').classList.remove('active');
+            setTimeout(() => window.location.href = 'index.html', 400);
+        }
+
+        function save() {
+            const finalWeight = weightDisplay.innerText;
+            alert(`已记录今日体重: ${finalWeight} KG！加油 💪`);
+            goBack();
+        }
+    </script>
+</body>
+</html>
